@@ -516,9 +516,12 @@ class DRLEnsembleAgent:
             print("A2C Sharpe Ratio: ", sharpe_a2c)
 
             print("======PPO Training========")
-            model_ppo = self.get_model(
-                "ppo", self.train_env, policy="MlpLstmPolicy", model_kwargs=PPO_model_kwargs
-            )
+            model_ppo =  RecurrentPPO(
+            policy="MlpLstmPolicy,
+            env=self.train_env,
+            tensorboard_log=f"{config.TENSORBOARD_LOG_DIR}/{"ppo"}",
+            policy_kwargs=PPO_model_kwargs
+        )
             model_ppo = self.train_model(
                 model_ppo,
                 "ppo",
