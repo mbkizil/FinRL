@@ -516,7 +516,7 @@ class DRLEnsembleAgent:
 
             print("======PPO Training========")
             model_ppo = self.get_model(
-                "ppo", self.train_env, policy="MlpPolicy", model_kwargs=PPO_model_kwargs
+                "ppo", self.train_env, policy="MlpLstmPolicy", model_kwargs=PPO_model_kwargs
             )
             model_ppo = self.train_model(
                 model_ppo,
