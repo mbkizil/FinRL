@@ -517,7 +517,7 @@ class DRLEnsembleAgent:
 
             print("======PPO Training========")
             model_ppo =  RecurrentPPO(
-            policy="MlpLstmPolicy,
+            policy="MlpLstmPolicy",
             env=self.train_env,
             tensorboard_log=f"{config.TENSORBOARD_LOG_DIR}/{"ppo"}",
             policy_kwargs=PPO_model_kwargs
