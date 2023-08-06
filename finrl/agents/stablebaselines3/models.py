@@ -516,12 +516,18 @@ class DRLEnsembleAgent:
             print("A2C Sharpe Ratio: ", sharpe_a2c)
 
             print("======PPO Training========")
+
+            #################################
+            mod_nam = "ppo"
             model_ppo =  RecurrentPPO(
-            policy="MlpLstmPolicy",
-            env=self.train_env,
-            tensorboard_log=f"{config.TENSORBOARD_LOG_DIR}/{"ppo"}",
-            policy_kwargs=PPO_model_kwargs
-        )
+                policy="MlpLstmPolicy",
+                env=self.train_env,
+                tensorboard_log=f"{config.TENSORBOARD_LOG_DIR}/{mod_nam}",
+                ent_coef = PPO_model_kwargs["ent_coef"],
+                n_steps = PPO_model_kwargs["n_steps"],
+                learning_rate = PPO_model_kwargs["learning_rate"],
+                batch_size = PPO_model_kwargs["batch_size"]
+            )
             model_ppo = self.train_model(
                 model_ppo,
                 "ppo",
@@ -683,7 +689,7 @@ class DRLEnsembleAgent:
 
         end = time.time()
         print("Ensemble Strategy took: ", (end - start) / 60, " minutes")
-
+        print(model_use)
         df_summary = pd.DataFrame(
             [
                 iteration_list,
