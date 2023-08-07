@@ -20,7 +20,7 @@ from finrl import config
 from finrl.meta.env_stock_trading.env_stocktrading import StockTradingEnv
 from finrl.meta.preprocessor.preprocessors import data_split
 
-MODELS = {"a2c": A2C, "ddpg": DDPG, "td3": TD3, "sac": SAC, "ppo": RecurrentPPO}
+MODELS = {"a2c": A2C, "ddpg": DDPG, "td3": TD3, "sac": SAC, "ppo": PPO, "rec": RecurrentPPO}
 
 MODEL_KWARGS = {x: config.__dict__[f"{x.upper()}_PARAMS"] for x in MODELS.keys()}
 
@@ -337,7 +337,8 @@ class DRLEnsembleAgent:
         ppo_sharpe_list = []
         ddpg_sharpe_list = []
         a2c_sharpe_list = []
-
+        rec_sharpe_list = []
+        
         model_use = []
         validation_start_date_list = []
         validation_end_date_list = []
@@ -516,17 +517,8 @@ class DRLEnsembleAgent:
             print("A2C Sharpe Ratio: ", sharpe_a2c)
 
             print("======PPO Training========")
-
-            #################################
-            mod_nam = "ppo"
-            model_ppo =  RecurrentPPO(
-                policy="MlpLstmPolicy",
-                env=self.train_env,
-                tensorboard_log=f"{config.TENSORBOARD_LOG_DIR}/{mod_nam}",
-                ent_coef = PPO_model_kwargs["ent_coef"],
-                n_steps = PPO_model_kwargs["n_steps"],
-                learning_rate = PPO_model_kwargs["learning_rate"],
-                batch_size = PPO_model_kwargs["batch_size"]
+            model_ppo = self.get_model(
+                "ppo", self.train_env, policy="MlpPolicy", model_kwargs=PPO_model_kwargs
             )
             model_ppo = self.train_model(
                 model_ppo,
@@ -572,6 +564,66 @@ class DRLEnsembleAgent:
             )
             sharpe_ppo = self.get_validation_sharpe(i, model_name="PPO")
             print("PPO Sharpe Ratio: ", sharpe_ppo)
+
+
+            
+            print("======REC Training========")
+
+            #################################
+            mod_nam = "rec"
+            model_rec =  RecurrentPPO(
+                policy="MlpLstmPolicy",
+                env=self.train_env,
+                tensorboard_log=f"{config.TENSORBOARD_LOG_DIR}/{rec}",
+                ent_coef = PPO_model_kwargs["ent_coef"],
+                n_steps = PPO_model_kwargs["n_steps"],
+                learning_rate = PPO_model_kwargs["learning_rate"],
+                batch_size = PPO_model_kwargs["batch_size"]
+            )
+            model_rec = self.train_model(
+                model_rec,
+                "REC",
+                tb_log_name=f"rec_{i}",
+                iter_num=i,
+                total_timesteps=timesteps_dict["ppo"],
+            )  # 100_000
+            print(
+                "======REC Validation from: ",
+                validation_start_date,
+                "to ",
+                validation_end_date,
+            )
+            val_env_rec = DummyVecEnv(
+                [
+                    lambda: StockTradingEnv(
+                        df=validation,
+                        stock_dim=self.stock_dim,
+                        hmax=self.hmax,
+                        initial_amount=self.initial_amount,
+                        num_stock_shares=[0] * self.stock_dim,
+                        buy_cost_pct=[self.buy_cost_pct] * self.stock_dim,
+                        sell_cost_pct=[self.sell_cost_pct] * self.stock_dim,
+                        reward_scaling=self.reward_scaling,
+                        state_space=self.state_space,
+                        action_space=self.action_space,
+                        tech_indicator_list=self.tech_indicator_list,
+                        turbulence_threshold=turbulence_threshold,
+                        iteration=i,
+                        model_name="REC",
+                        mode="validation",
+                        print_verbosity=self.print_verbosity,
+                    )
+                ]
+            )
+            val_obs_rec = val_env_rec.reset()
+            self.DRL_validation(
+                model=model_rec,
+                test_data=validation,
+                test_env=val_env_rec,
+                test_obs=val_obs_rec,
+            )
+            sharpe_rec = self.get_validation_sharpe(i, model_name="REC")
+            print("REC Sharpe Ratio: ", sharpe_rec)
 
             print("======DDPG Training========")
             model_ddpg = self.get_model(
@@ -627,9 +679,11 @@ class DRLEnsembleAgent:
             print("A2C Sharpe Ratio: ", sharpe_a2c)
             print("PPO Sharpe Ratio: ", sharpe_ppo)
             print("DDPG Sharpe Ratio: ", sharpe_ddpg)
+            print("REC Sharpe Ratio: ", sharpe_rec)
             ppo_sharpe_list.append(sharpe_ppo)
             a2c_sharpe_list.append(sharpe_a2c)
             ddpg_sharpe_list.append(sharpe_ddpg)
+            rec_sharpe_list.append(sharpe_rec)
 
             print(
                 "======Best Model Retraining from: ",
@@ -651,15 +705,21 @@ class DRLEnsembleAgent:
             #                                                    self.tech_indicator_list,
             #                                                    print_verbosity=self.print_verbosity)])
             # Model Selection based on sharpe ratio
-            if (sharpe_ppo >= sharpe_a2c) & (sharpe_ppo >= sharpe_ddpg):
+            if (sharpe_ppo >= sharpe_a2c) & (sharpe_ppo >= sharpe_ddpg) & (sharpe_ppo >= sharpe_rec):
                 model_use.append("PPO")
                 model_ensemble = model_ppo
 
                 # model_ensemble = self.get_model("ppo",self.train_full_env,policy="MlpPolicy",model_kwargs=PPO_model_kwargs)
                 # model_ensemble = self.train_model(model_ensemble, "ensemble", tb_log_name="ensemble_{}".format(i), iter_num = i, total_timesteps=timesteps_dict['ppo']) #100_000
-            elif (sharpe_a2c > sharpe_ppo) & (sharpe_a2c > sharpe_ddpg):
+            elif (sharpe_a2c > sharpe_ppo) & (sharpe_a2c > sharpe_ddpg) & (sharpe_a2c > sharpe_rec):
                 model_use.append("A2C")
                 model_ensemble = model_a2c
+
+                # model_ensemble = self.get_model("a2c",self.train_full_env,policy="MlpPolicy",model_kwargs=A2C_model_kwargs)
+                # model_ensemble = self.train_model(model_ensemble, "ensemble", tb_log_name="ensemble_{}".format(i), iter_num = i, total_timesteps=timesteps_dict['a2c']) #100_000
+            elif (sharpe_rec > sharpe_ppo) & (sharpe_rec > sharpe_ddpg) & (sharpe_rec > sharpe_a2c):
+                model_use.append("REC")
+                model_ensemble = model_rec
 
                 # model_ensemble = self.get_model("a2c",self.train_full_env,policy="MlpPolicy",model_kwargs=A2C_model_kwargs)
                 # model_ensemble = self.train_model(model_ensemble, "ensemble", tb_log_name="ensemble_{}".format(i), iter_num = i, total_timesteps=timesteps_dict['a2c']) #100_000
@@ -702,6 +762,7 @@ class DRLEnsembleAgent:
                 a2c_sharpe_list,
                 ppo_sharpe_list,
                 ddpg_sharpe_list,
+                rec_sharpe_list
             ]
         ).T
         df_summary.columns = [
@@ -712,6 +773,7 @@ class DRLEnsembleAgent:
             "A2C Sharpe",
             "PPO Sharpe",
             "DDPG Sharpe",
+            "REC Sharpe",
         ]
 
         return df_summary
