@@ -178,7 +178,7 @@ class DRLEnsembleAgent:
         if model_name not in MODELS:
             raise NotImplementedError("NotImplementedError")
         if model_name=="ppo":
-            policy="MlpLstmPolicy"
+            policy="CnnLstmPolicy"
         if model_kwargs is None:
             temp_model_kwargs = MODEL_KWARGS[model_name]
         else:
@@ -472,7 +472,7 @@ class DRLEnsembleAgent:
             #################################
             mod_nam = "ppo"
             model_ppo =  RecurrentPPO(
-                policy="MlpLstmPolicy",
+                policy="CnnLstmPolicy",
                 env=self.train_env,
                 tensorboard_log=f"{config.TENSORBOARD_LOG_DIR}/{mod_nam}",
                 ent_coef = PPO_model_kwargs["ent_coef"],
