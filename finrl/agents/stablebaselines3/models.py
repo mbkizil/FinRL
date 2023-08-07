@@ -80,8 +80,7 @@ class DRLAgent:
     ):
         if model_name not in MODELS:
             raise NotImplementedError("NotImplementedError")
-        if model_name=="ppo":
-            policy="MlpLstmPolicy"
+
         if model_kwargs is None:
             model_kwargs = MODEL_KWARGS[model_name]
 
@@ -177,8 +176,6 @@ class DRLEnsembleAgent:
     ):
         if model_name not in MODELS:
             raise NotImplementedError("NotImplementedError")
-        if model_name=="ppo":
-            policy="MlpLstmPolicy"
         if model_kwargs is None:
             temp_model_kwargs = MODEL_KWARGS[model_name]
         else:
