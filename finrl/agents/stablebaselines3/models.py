@@ -624,6 +624,9 @@ class DRLEnsembleAgent:
             )
             sharpe_ddpg = self.get_validation_sharpe(i, model_name="DDPG")
 
+            print("A2C Sharpe Ratio: ", sharpe_a2c)
+            print("PPO Sharpe Ratio: ", sharpe_ppo)
+            print("DDPG Sharpe Ratio: ", sharpe_ddpg)
             ppo_sharpe_list.append(sharpe_ppo)
             a2c_sharpe_list.append(sharpe_a2c)
             ddpg_sharpe_list.append(sharpe_ddpg)
