@@ -75,7 +75,7 @@ class DRLAgent:
         policy_kwargs=None,
         model_kwargs=None,
         verbose=1,
-        seed=None,
+        seed=41,
         tensorboard_log=None,
     ):
         if model_name not in MODELS:
@@ -171,7 +171,7 @@ class DRLEnsembleAgent:
         policy="MlpPolicy",
         policy_kwargs=None,
         model_kwargs=None,
-        seed=None,
+        seed=41,
         verbose=1,
     ):
         if model_name not in MODELS:
