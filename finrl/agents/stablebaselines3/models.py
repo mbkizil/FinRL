@@ -75,7 +75,7 @@ class DRLAgent:
         policy_kwargs=None,
         model_kwargs=None,
         verbose=1,
-        seed=None,
+        seed=41,
         tensorboard_log=None,
     ):
         if model_name not in MODELS:
@@ -172,7 +172,7 @@ class DRLEnsembleAgent:
         policy="MlpPolicy",
         policy_kwargs=None,
         model_kwargs=None,
-        seed=None,
+        seed=41,
         verbose=1,
     ):
         if model_name not in MODELS:
@@ -526,7 +526,8 @@ class DRLEnsembleAgent:
                 ent_coef = PPO_model_kwargs["ent_coef"],
                 n_steps = PPO_model_kwargs["n_steps"],
                 learning_rate = PPO_model_kwargs["learning_rate"],
-                batch_size = PPO_model_kwargs["batch_size"]
+                batch_size = PPO_model_kwargs["batch_size"],
+                seed=41
             )
             model_ppo = self.train_model(
                 model_ppo,
