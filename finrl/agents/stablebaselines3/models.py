@@ -463,56 +463,6 @@ class DRLEnsembleAgent:
             )
             # print("training: ",len(data_split(df, start=20090000, end=test.datadate.unique()[i-rebalance_window]) ))
             # print("==============Model Training===========")
-            print("======A2C Training========")
-            model_a2c = self.get_model(
-                "a2c", self.train_env, policy="MlpPolicy", model_kwargs=A2C_model_kwargs
-            )
-            model_a2c = self.train_model(
-                model_a2c,
-                "a2c",
-                tb_log_name=f"a2c_{i}",
-                iter_num=i,
-                total_timesteps=timesteps_dict["a2c"],
-            )  # 100_000
-
-            print(
-                "======A2C Validation from: ",
-                validation_start_date,
-                "to ",
-                validation_end_date,
-            )
-            val_env_a2c = DummyVecEnv(
-                [
-                    lambda: StockTradingEnv(
-                        df=validation,
-                        stock_dim=self.stock_dim,
-                        hmax=self.hmax,
-                        initial_amount=self.initial_amount,
-                        num_stock_shares=[0] * self.stock_dim,
-                        buy_cost_pct=[self.buy_cost_pct] * self.stock_dim,
-                        sell_cost_pct=[self.sell_cost_pct] * self.stock_dim,
-                        reward_scaling=self.reward_scaling,
-                        state_space=self.state_space,
-                        action_space=self.action_space,
-                        tech_indicator_list=self.tech_indicator_list,
-                        turbulence_threshold=turbulence_threshold,
-                        iteration=i,
-                        model_name="A2C",
-                        mode="validation",
-                        print_verbosity=self.print_verbosity,
-                    )
-                ]
-            )
-            val_obs_a2c = val_env_a2c.reset()
-            self.DRL_validation(
-                model=model_a2c,
-                test_data=validation,
-                test_env=val_env_a2c,
-                test_obs=val_obs_a2c,
-            )
-            sharpe_a2c = self.get_validation_sharpe(i, model_name="A2C")
-            print("A2C Sharpe Ratio: ", sharpe_a2c)
-
             print("======PPO Training========")
             model_ppo = self.get_model(
                 "ppo", self.train_env, policy="MlpPolicy", model_kwargs=PPO_model_kwargs
@@ -622,65 +572,10 @@ class DRLEnsembleAgent:
             )
             sharpe_rec = self.get_validation_sharpe(i, model_name="REC")
             print("REC Sharpe Ratio: ", sharpe_rec)
-
-            print("======DDPG Training========")
-            model_ddpg = self.get_model(
-                "ddpg",
-                self.train_env,
-                policy="MlpPolicy",
-                model_kwargs=DDPG_model_kwargs,
-            )
-            model_ddpg = self.train_model(
-                model_ddpg,
-                "ddpg",
-                tb_log_name=f"ddpg_{i}",
-                iter_num=i,
-                total_timesteps=timesteps_dict["ddpg"],
-            )  # 50_000
-            print(
-                "======DDPG Validation from: ",
-                validation_start_date,
-                "to ",
-                validation_end_date,
-            )
-            val_env_ddpg = DummyVecEnv(
-                [
-                    lambda: StockTradingEnv(
-                        df=validation,
-                        stock_dim=self.stock_dim,
-                        hmax=self.hmax,
-                        initial_amount=self.initial_amount,
-                        num_stock_shares=[0] * self.stock_dim,
-                        buy_cost_pct=[self.buy_cost_pct] * self.stock_dim,
-                        sell_cost_pct=[self.sell_cost_pct] * self.stock_dim,
-                        reward_scaling=self.reward_scaling,
-                        state_space=self.state_space,
-                        action_space=self.action_space,
-                        tech_indicator_list=self.tech_indicator_list,
-                        turbulence_threshold=turbulence_threshold,
-                        iteration=i,
-                        model_name="DDPG",
-                        mode="validation",
-                        print_verbosity=self.print_verbosity,
-                    )
-                ]
-            )
-            val_obs_ddpg = val_env_ddpg.reset()
-            self.DRL_validation(
-                model=model_ddpg,
-                test_data=validation,
-                test_env=val_env_ddpg,
-                test_obs=val_obs_ddpg,
-            )
-            sharpe_ddpg = self.get_validation_sharpe(i, model_name="DDPG")
-
-            print("A2C Sharpe Ratio: ", sharpe_a2c)
             print("PPO Sharpe Ratio: ", sharpe_ppo)
-            print("DDPG Sharpe Ratio: ", sharpe_ddpg)
-            print("REC Sharpe Ratio: ", sharpe_rec)
             ppo_sharpe_list.append(sharpe_ppo)
-            a2c_sharpe_list.append(sharpe_a2c)
-            ddpg_sharpe_list.append(sharpe_ddpg)
+            a2c_sharpe_list.append(sharpe_ppo)
+            ddpg_sharpe_list.append(sharpe_rec)
             rec_sharpe_list.append(sharpe_rec)
 
             print(
@@ -703,27 +598,12 @@ class DRLEnsembleAgent:
             #                                                    self.tech_indicator_list,
             #                                                    print_verbosity=self.print_verbosity)])
             # Model Selection based on sharpe ratio
-            if (sharpe_ppo >= sharpe_a2c) & (sharpe_ppo >= sharpe_ddpg) & (sharpe_ppo >= sharpe_rec):
+            if (sharpe_ppo >= sharpe_rec):
                 model_use.append("PPO")
                 model_ensemble = model_ppo
-
-                # model_ensemble = self.get_model("ppo",self.train_full_env,policy="MlpPolicy",model_kwargs=PPO_model_kwargs)
-                # model_ensemble = self.train_model(model_ensemble, "ensemble", tb_log_name="ensemble_{}".format(i), iter_num = i, total_timesteps=timesteps_dict['ppo']) #100_000
-            elif (sharpe_a2c > sharpe_ppo) & (sharpe_a2c > sharpe_ddpg) & (sharpe_a2c > sharpe_rec):
-                model_use.append("A2C")
-                model_ensemble = model_a2c
-
-                # model_ensemble = self.get_model("a2c",self.train_full_env,policy="MlpPolicy",model_kwargs=A2C_model_kwargs)
-                # model_ensemble = self.train_model(model_ensemble, "ensemble", tb_log_name="ensemble_{}".format(i), iter_num = i, total_timesteps=timesteps_dict['a2c']) #100_000
-            elif (sharpe_rec > sharpe_ppo) & (sharpe_rec > sharpe_ddpg) & (sharpe_rec > sharpe_a2c):
+            else:
                 model_use.append("REC")
                 model_ensemble = model_rec
-
-                # model_ensemble = self.get_model("a2c",self.train_full_env,policy="MlpPolicy",model_kwargs=A2C_model_kwargs)
-                # model_ensemble = self.train_model(model_ensemble, "ensemble", tb_log_name="ensemble_{}".format(i), iter_num = i, total_timesteps=timesteps_dict['a2c']) #100_000
-            else:
-                model_use.append("DDPG")
-                model_ensemble = model_ddpg
 
                 # model_ensemble = self.get_model("ddpg",self.train_full_env,policy="MlpPolicy",model_kwargs=DDPG_model_kwargs)
                 # model_ensemble = self.train_model(model_ensemble, "ensemble", tb_log_name="ensemble_{}".format(i), iter_num = i, total_timesteps=timesteps_dict['ddpg']) #50_000
