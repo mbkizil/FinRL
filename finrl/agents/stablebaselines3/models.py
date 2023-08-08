@@ -461,11 +461,19 @@ class DRLEnsembleAgent:
                     i - self.rebalance_window - self.validation_window
                 ],
             )
+            mod_nam="a2c"
             # print("training: ",len(data_split(df, start=20090000, end=test.datadate.unique()[i-rebalance_window]) ))
             # print("==============Model Training===========")
             print("======A2C Training========")
-            model_a2c = self.get_model(
-                "a2c", self.train_env, policy="MlpPolicy", model_kwargs=A2C_model_kwargs
+            model_a2c = RecurrentPPO(
+                policy="MlpLstmPolicy",
+                env=self.train_env,
+                tensorboard_log=f"{config.TENSORBOARD_LOG_DIR}/{mod_nam}",
+                ent_coef = PPO_model_kwargs["ent_coef"],
+                n_steps = PPO_model_kwargs["n_steps"],
+                learning_rate = 0.25*PPO_model_kwargs["learning_rate"],
+                batch_size = PPO_model_kwargs["batch_size"],
+                seed = 41
             )
             model_a2c = self.train_model(
                 model_a2c,
@@ -514,8 +522,15 @@ class DRLEnsembleAgent:
             print("A2C Sharpe Ratio: ", sharpe_a2c)
 
             print("======PPO Training========")
-            model_ppo = self.get_model(
-                "ppo", self.train_env, policy="MlpPolicy", model_kwargs=PPO_model_kwargs
+            model_ppo = RecurrentPPO(
+                policy="MlpLstmPolicy",
+                env=self.train_env,
+                tensorboard_log=f"{config.TENSORBOARD_LOG_DIR}/{mod_nam}",
+                ent_coef = PPO_model_kwargs["ent_coef"],
+                n_steps = PPO_model_kwargs["n_steps"],
+                learning_rate = 0.5 * PPO_model_kwargs["learning_rate"],
+                batch_size = PPO_model_kwargs["batch_size"],
+                seed = 41
             )
             model_ppo = self.train_model(
                 model_ppo,
@@ -574,7 +589,7 @@ class DRLEnsembleAgent:
                 tensorboard_log=f"{config.TENSORBOARD_LOG_DIR}/{mod_nam}",
                 ent_coef = PPO_model_kwargs["ent_coef"],
                 n_steps = PPO_model_kwargs["n_steps"],
-                learning_rate = PPO_model_kwargs["learning_rate"],
+                learning_rate = 2* PPO_model_kwargs["learning_rate"],
                 batch_size = PPO_model_kwargs["batch_size"],
                 seed = 41
             )
@@ -624,11 +639,15 @@ class DRLEnsembleAgent:
             print("REC Sharpe Ratio: ", sharpe_rec)
 
             print("======DDPG Training========")
-            model_ddpg = self.get_model(
-                "ddpg",
-                self.train_env,
-                policy="MlpPolicy",
-                model_kwargs=DDPG_model_kwargs,
+            model_ddpg = RecurrentPPO(
+                policy="MlpLstmPolicy",
+                env=self.train_env,
+                tensorboard_log=f"{config.TENSORBOARD_LOG_DIR}/{mod_nam}",
+                ent_coef = PPO_model_kwargs["ent_coef"],
+                n_steps = PPO_model_kwargs["n_steps"],
+                learning_rate = 4 * PPO_model_kwargs["learning_rate"],
+                batch_size = PPO_model_kwargs["batch_size"],
+                seed = 41
             )
             model_ddpg = self.train_model(
                 model_ddpg,
@@ -674,10 +693,10 @@ class DRLEnsembleAgent:
             )
             sharpe_ddpg = self.get_validation_sharpe(i, model_name="DDPG")
 
-            print("A2C Sharpe Ratio: ", sharpe_a2c)
-            print("PPO Sharpe Ratio: ", sharpe_ppo)
-            print("DDPG Sharpe Ratio: ", sharpe_ddpg)
-            print("REC Sharpe Ratio: ", sharpe_rec)
+            print("0.25 Sharpe Ratio: ", sharpe_a2c)
+            print("0.5 Sharpe Ratio: ", sharpe_ppo)
+            print("2 Sharpe Ratio: ", sharpe_ddpg)
+            print("4 Sharpe Ratio: ", sharpe_rec)
             ppo_sharpe_list.append(sharpe_ppo)
             a2c_sharpe_list.append(sharpe_a2c)
             ddpg_sharpe_list.append(sharpe_ddpg)
