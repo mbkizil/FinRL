@@ -571,7 +571,7 @@ class DRLEnsembleAgent:
             model_rec =  RecurrentPPO(
                 policy="MlpLstmPolicy",
                 env=self.train_env,
-                tensorboard_log=f"{config.TENSORBOARD_LOG_DIR}/{rec}",
+                tensorboard_log=f"{config.TENSORBOARD_LOG_DIR}/{mod_nam}",
                 ent_coef = PPO_model_kwargs["ent_coef"],
                 n_steps = PPO_model_kwargs["n_steps"],
                 learning_rate = PPO_model_kwargs["learning_rate"],
