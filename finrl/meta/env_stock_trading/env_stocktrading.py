@@ -358,7 +358,7 @@ class StockTradingEnv(gym.Env):
     def reset(
         self,
         *,
-        seed=None,
+        seed=41,
         options=None,
     ):
         # initiate state
@@ -546,7 +546,7 @@ class StockTradingEnv(gym.Env):
             df_actions = pd.DataFrame({"date": date_list, "actions": action_list})
         return df_actions
 
-    def _seed(self, seed=None):
+    def _seed(self, seed=41):
         self.np_random, seed = seeding.np_random(seed)
         return [seed]
 
