@@ -469,8 +469,8 @@ class DRLEnsembleAgent:
                 policy="MlpLstmPolicy",
                 env=self.train_env,
                 tensorboard_log=f"{config.TENSORBOARD_LOG_DIR}/{mod_nam}",
-                ent_coef = 8 * PPO_model_kwargs["ent_coef"],
-                n_steps = 0.5 * PPO_model_kwargs["n_steps"],
+                ent_coef = 0.5 * PPO_model_kwargs["ent_coef"],
+                n_steps = int(0.5 * PPO_model_kwargs["n_steps"]),
                 learning_rate = 20*PPO_model_kwargs["learning_rate"],
                 batch_size = PPO_model_kwargs["batch_size"],
                 seed = 41
@@ -588,7 +588,7 @@ class DRLEnsembleAgent:
                 env=self.train_env,
                 tensorboard_log=f"{config.TENSORBOARD_LOG_DIR}/{mod_nam}",
                 ent_coef = 0.5 * PPO_model_kwargs["ent_coef"],
-                n_steps = 2 * PPO_model_kwargs["n_steps"],
+                n_steps = int(2 * PPO_model_kwargs["n_steps"]),
                 learning_rate = 20 * PPO_model_kwargs["learning_rate"],
                 batch_size = PPO_model_kwargs["batch_size"],
                 seed = 41
@@ -644,7 +644,7 @@ class DRLEnsembleAgent:
                 env=self.train_env,
                 tensorboard_log=f"{config.TENSORBOARD_LOG_DIR}/{mod_nam}",
                 ent_coef = 0.5 * PPO_model_kwargs["ent_coef"],
-                n_steps = 4* PPO_model_kwargs["n_steps"],
+                n_steps = int(4* PPO_model_kwargs["n_steps"]),
                 learning_rate = 20 * PPO_model_kwargs["learning_rate"],
                 batch_size = PPO_model_kwargs["batch_size"],
                 seed = 41
