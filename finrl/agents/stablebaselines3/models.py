@@ -469,9 +469,9 @@ class DRLEnsembleAgent:
                 policy="MlpLstmPolicy",
                 env=self.train_env,
                 tensorboard_log=f"{config.TENSORBOARD_LOG_DIR}/{mod_nam}",
-                ent_coef = PPO_model_kwargs["ent_coef"],
+                ent_coef = 0.5 * PPO_model_kwargs["ent_coef"],
                 n_steps = PPO_model_kwargs["n_steps"],
-                learning_rate = 0.25*PPO_model_kwargs["learning_rate"],
+                learning_rate = 20*PPO_model_kwargs["learning_rate"],
                 batch_size = PPO_model_kwargs["batch_size"],
                 seed = 41
             )
@@ -528,7 +528,7 @@ class DRLEnsembleAgent:
                 tensorboard_log=f"{config.TENSORBOARD_LOG_DIR}/{mod_nam}",
                 ent_coef = PPO_model_kwargs["ent_coef"],
                 n_steps = PPO_model_kwargs["n_steps"],
-                learning_rate = 0.5 * PPO_model_kwargs["learning_rate"],
+                learning_rate = 20 * PPO_model_kwargs["learning_rate"],
                 batch_size = PPO_model_kwargs["batch_size"],
                 seed = 41
             )
@@ -587,9 +587,9 @@ class DRLEnsembleAgent:
                 policy="MlpLstmPolicy",
                 env=self.train_env,
                 tensorboard_log=f"{config.TENSORBOARD_LOG_DIR}/{mod_nam}",
-                ent_coef = PPO_model_kwargs["ent_coef"],
+                ent_coef = 2 * PPO_model_kwargs["ent_coef"],
                 n_steps = PPO_model_kwargs["n_steps"],
-                learning_rate = 2* PPO_model_kwargs["learning_rate"],
+                learning_rate = 20 * PPO_model_kwargs["learning_rate"],
                 batch_size = PPO_model_kwargs["batch_size"],
                 seed = 41
             )
@@ -643,9 +643,9 @@ class DRLEnsembleAgent:
                 policy="MlpLstmPolicy",
                 env=self.train_env,
                 tensorboard_log=f"{config.TENSORBOARD_LOG_DIR}/{mod_nam}",
-                ent_coef = PPO_model_kwargs["ent_coef"],
+                ent_coef = 4 * PPO_model_kwargs["ent_coef"],
                 n_steps = PPO_model_kwargs["n_steps"],
-                learning_rate = 4 * PPO_model_kwargs["learning_rate"],
+                learning_rate = 20 * PPO_model_kwargs["learning_rate"],
                 batch_size = PPO_model_kwargs["batch_size"],
                 seed = 41
             )
