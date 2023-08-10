@@ -551,7 +551,7 @@ class DRLEnsembleAgent:
             #                                                    self.tech_indicator_list,
             #                                                    print_verbosity=self.print_verbosity)])
             # Model Selection based on sharpe ratio
-            if True
+            if True:
                 model_use.append("REC")
                 model_ensemble = model_rec
 
